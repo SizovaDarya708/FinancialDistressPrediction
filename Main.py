@@ -21,18 +21,23 @@ from sklearn.model_selection import StratifiedShuffleSplit
 
 
 def main():
+    st.sidebar.header('Прогнозирование банкротства компаний')
     page = st.sidebar.selectbox("Навигатор", ["Теория", "Практика","О данных"])
     
     data = load_data()    
-    st.set_option('deprecation.showPyplotGlobalUse', False)
-    
+    st.set_option('deprecation.showPyplotGlobalUse', False)    
     if page == "Теория":
-        st.header("О методах прогнозирования временных рядов")
+        st.header("Прогнозирование банкротства компаний")
         st.write("Please select a page on the left.")
+        st.image('DataAnal/диплом/pic/main.PNG')
+        st.header("О методах прогнозирования, используемых в программе")
+        aboutModels()
+        info()
     elif page == "О данных":
         st.title("Данные для прогнозирования")
         st.write(data.head())
         st.write("Данные взяты с сайта kaggle")
+        st.write('Данные взяты https://www.kaggle.com/shebrahimi/financial-distress')
         st.write("Этот набор данных предназначен для прогнозирования финансовых бедствий для выборки компаний.")
         st.write(data.describe())
         if st.checkbox("О файле Financial Distress.csv"):
@@ -48,8 +53,8 @@ def main():
         st.title("Data Exploration")
         st.write(data.head())
         st.write("""# Прогноз финансовых бедствий различных компаний""")
-        method = st.selectbox("Выбор метода прогнозирования", ["RandomForest", "XGBoosting", "Logistic Regression"])
-        if method == "RandomForest":
+        method = st.selectbox("Выбор метода прогнозирования", ["Случайный лес", "XGBoosting", "Логистическая регрессия", "ANN", "Вывод"])
+        if method == "Случайный лес":
             st.title("Модель прогнозирования - случайный лес")       
             #tree = RandomForest(data)
             #st.write(tree)
@@ -59,8 +64,75 @@ def main():
             st.title("Модель прогнозирования - бустинг") 
             b = boost()
             st.write(b)
+        elif method == "Логистическая регрессия":
+            st.title("Модель прогнозирования - Логистическая регрессия")
+            r = regress()
+            st.write(r)
+        elif method == "ANN":
+            st.title("Модель прогнозирования - ANN") 
+            a = ann()                    
+            st.write(a)       
+        elif method == "Вывод":
+            st.title("Сравнение моделей") 
+            st.image('DataAnal/диплом/pic/Итог.PNG')
+            
+def aboutModels():
+    st.header("Где можно использовать линейную регрессию?")
+    st.write("Это очень мощный метод, и его можно использовать для понимания факторов, влияющих на прибыльность. Его можно использовать для прогнозирования продаж в ближайшие месяцы путем анализа данных о продажах за предыдущие месяцы. Он также может быть использован для получения различной информации о поведении клиентов. К концу блога мы создадим модель, которая выглядит как на картинке ниже, т.е. определим линию, которая наилучшим образом соответствует данным.")
+    st.image('DataAnal/диплом/pic/linear.gif')
+    st.image('DataAnal/диплом/pic/mathLinear.PNG')
+    
+    st.header("Логистическая регрессия")
+    st.write("Логистическая регрессия обычно используется для целей классификации. В отличие от линейной регрессии, зависимая переменная может принимать ограниченное количество значений только, т. Е. Зависимая переменнаякатегорический, Когда число возможных результатов только два, это называетсяБинарная логистическая регрессия")
+    st.write("В линейной регрессии выход является взвешенной суммой входных данных. Логистическая регрессия - это обобщенная линейная регрессия в том смысле, что мы не выводим взвешенную сумму входных данных напрямую, а пропускаем ее через функцию, которая может отображать любое действительное значение в диапазоне от 0 до 1.")
+    st.image('DataAnal/диплом/pic/logistic.gif')
+    
+    st.header("Случайный лес")
+    st.write("RF (random forest) — это множество решающих деревьев. В задаче регрессии их ответы усредняются, в задаче классификации принимается решение голосованием по большинству.")
+    st.image('DataAnal/диплом/pic/random.gif')
+    
+    st.header("Нейронные сети")    
+    st.write("ИНС представляет собой систему соединённых и взаимодействующих между собой простых процессоров (искусственных нейронов). Такие процессоры обычно довольно просты (особенно в сравнении с процессорами, используемыми в персональных компьютерах). Каждый процессор подобной сети имеет дело только с сигналами, которые он периодически получает, и сигналами, которые он периодически посылает другим процессорам. И, тем не менее, будучи соединёнными в достаточно большую сеть с управляемым взаимодействием, такие по отдельности простые процессоры вместе способны выполнять довольно сложные задачи.")
+    st.image('DataAnal/диплом/pic/ann1.gif')
+    
 
 
+def info():
+    st.header("Статьи и материалы, используемые в работе:")
+    st.write("Использование Streamlit")
+    st.write("https://blog.skillfactory.ru/nauka-o-dannyh-data-science/kak-napisat-veb-prilozhenie-dlya-demonstratsii-data-science-proekta-na-python/ https://docs.streamlit.io/en/stable/api.html")
+    st.write("https://medium.com/nuances-of-programming")
+    st.write("О работе с несбалансированными данными:")
+    st.write("https://www.machinelearningmastery.ru/tactics-to-combat-imbalanced-classes-in-your-machine-learning-dataset/")
+    st.write("https://coderoad.ru/40568254/")
+    st.write("О моделях прогнозирования")
+    st.write("Логистическая регрессия:")
+    st.write("https://www.machinelearningmastery.ru/building-a-logistic-regression-in-python-301d27367c24/")
+    st.write("https://medium.com/nuances-of-programming")
+    st.write("Случайный лес:")
+    st.write("https://dyakonov.org/2016/11/14/")
+    st.write("https://ru.wikipedia.org/wiki/Random_forest")
+    st.write("https://www.machinelearningmastery.ru/implement-random-forest-scratch-python/")
+    st.write("XGBoosting:")
+    st.write("https://xgboost.readthedocs.io/en/latest/python/python_intro.html")
+    st.write("https://www.machinelearningmastery.ru/xgboost-python-mini-course/")
+       
+    st.write("ANN")
+    st.write("https://en.wikipedia.org/wiki/Artificial_neural_network")
+    st.write(" https://www.geeksforgeeks.org/implementing-ann-training-process-in-python/")
+    st.write("https://www.coursera.org/projects/basic-artificial-neural-networks-in-python")
+    
+    st.write("Прогнозирование временных рядов с помощью рекуррентных нейронных сетей")
+    st.write("https://habr.com/ru/post/495884/")
+    st.write("Прогнозирование временных рядов с помощью рекуррентных нейронных сетей LSTM в Python с использованием Keras")
+    st.write("https://www.machinelearningmastery.ru/time-series-prediction-lstm-recurrent-neural-networks-python-keras/")
+    st.write("How to Configure XGBoost for Imbalanced Classification")
+    st.write("https://machinelearningmastery.com/xgboost-for-imbalanced-classification/#:~:text=The%20XGBoost%20algorithm%20is%20effective,over%20the%20model%20training%20procedure.")
+    st.write("Intro XGboost Classification")
+    st.write("https://www.kaggle.com/babatee/intro-xgboost-classification")
+    
+    
+    
 def plotPerColumnDistribution(df, nGraphShown, nGraphPerRow):
     nunique = df.nunique()
     df = df[[col for col in df if nunique[col] > 1 and nunique[col] < 50]] # For displaying purposes, pick columns that have between 1 and 50 unique values
@@ -131,18 +203,22 @@ def Visualize(data):
    # st.pyplot(sns.show())
     
     
-    
-    
-    
-    
 
-@st.cache
-def boost():
-    return 0.90
+def ann():     
+    return 0.9601    
+    
+def regress():                     
+    st.image('DataAnal/диплом/pic/Логистическая регрессия.PNG')
+    return 0.9395
 
-@st.cache
+
+def boost():                     
+    st.image('DataAnal/диплом/pic/XGBoost.PNG')
+    return 0.9717
+
 def forest():
-    return 0.86
+    st.image('DataAnal/диплом/pic/Случайный лес.PNG')
+    return 0.9307
 
 @st.cache
 def load_data():
@@ -249,9 +325,7 @@ def XGBoosting(data):
 if __name__ == "__main__":
     main()
 
-st.sidebar.header('Прогнозирование банкротства компаний')
 
-st.sidebar.header('Данные взяты https://www.kaggle.com/shebrahimi/financial-distress')
 
 #основная панель
 
