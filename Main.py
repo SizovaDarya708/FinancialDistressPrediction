@@ -8,6 +8,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 import seaborn as sns
+import ML as ml
 import itertools
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix, roc_auc_score
@@ -23,7 +24,6 @@ from sklearn.model_selection import StratifiedShuffleSplit
 def main():
     st.sidebar.header('Прогнозирование банкротства компаний')
     page = st.sidebar.selectbox("Навигатор", ["Теория", "Практика","О данных"])
-    
     data = load_data()    
     st.set_option('deprecation.showPyplotGlobalUse', False)    
     if page == "Теория":
@@ -34,32 +34,55 @@ def main():
         aboutModels()
         info()
     elif page == "О данных":
-        st.title("Данные для прогнозирования")
-        st.write(data.head())
-        st.write("Данные взяты с сайта kaggle")
-        st.write('Данные взяты https://www.kaggle.com/shebrahimi/financial-distress')
-        st.write("Этот набор данных предназначен для прогнозирования финансовых бедствий для выборки компаний.")
-        st.write(data.describe())
-        if st.checkbox("О файле Financial Distress.csv"):
-            st.write("Первый столбец: Компания представляет собой образцы компаний.")
-            st.write("Второй столбец: Время показывает разные периоды времени, которым принадлежат данные. Длина временного ряда варьируется от 1 до 14 для каждой компании.")
-            st.write("Третий столбец: целевая переменная обозначается как «Финансовый кризис», если она будет больше -0,50, компанию следует считать здоровой (0). В противном случае он был бы расценен как финансово неблагополучный (1).")
-            st.write("От четвертого до последнего столбца: характеристики, обозначенные от x1 до x83, представляют собой некоторые финансовые и нефинансовые характеристики отобранных компаний. Эти характеристики относятся к предыдущему периоду времени, который следует использовать для прогнозирования того, будет ли компания испытывать финансовые затруднения или нет (классификация). Признак x80 - категориальная переменная")
+        AboutData(data)       
         Visualize(data)
-    elif page == "XGBoosting":
-        xgb = XGBoosting(data)
-        st.write(xgb)
     elif page == "Практика":
         st.title("Data Exploration")
         st.write(data.head())
         st.write("""# Прогноз финансовых бедствий различных компаний""")
-        method = st.selectbox("Выбор метода прогнозирования", ["Случайный лес", "XGBoosting", "Логистическая регрессия", "ANN", "Вывод"])
-        if method == "Случайный лес":
-            st.title("Модель прогнозирования - случайный лес")       
-            #tree = RandomForest(data)
+        method = st.selectbox("Выбор метода прогнозирования", ["Случайный лес", 
+                                                               "LightGBM",
+                                                               "Stochastic Gradient Decent",
+                                                               "Decision Tree",
+                                                               "Naive Bayes",
+                                                               "Support Vector Machines",
+                                                               "KNN",
+                                                               "Logistic Regression",
+                                                               "Random Forest",
+                                                               "Linear Regression",
+                                                               "XGBoost",
+                                                               "XGBoosting", 
+                                                               "Логистическая регрессия",
+                                                               "ANN", 
+                                                               "Вывод"])
+        if method == "LightGBM":
+            ml.LGBM()
+        elif method == "Stochastic Gradient Decent":
+            ml.SGD()
+        elif method == "Decision Tree":
+            ml.DT()
+        elif method == "Naive Bayes":
+            ml.GNB()
+        elif method == "Support Vector Machines":
+            ml.SVC()
+        elif method == "KNN":
+            ml.KNN()
+        elif method == "Logistic Regression":
+            ml.LR()
+        elif method == "Random Forest":
+            ml.RF()
+        elif method == "Linear Regression":
+            ml.LR()
+        elif method == "XGBoost":
+            ml.XGB()
+        elif method == "Случайный лес":
+            st.title("Модель прогнозирования - случайный лес")
+            params = add_parameter_ui(method)
+            get_classifier(method, params)
+            
             #st.write(tree)
-            r = forest()
-            st.write(r)
+            #r = forest()
+            #st.write(r)
         elif method == "XGBoosting":
             st.title("Модель прогнозирования - бустинг") 
             b = boost()
@@ -75,7 +98,187 @@ def main():
         elif method == "Вывод":
             st.title("Сравнение моделей") 
             st.image('DataAnal/диплом/pic/Итог.PNG')
-            
+
+
+#добавить настраиваемые параметры в моделях
+def get_classifier(clf_name, params):
+    clf = None
+    data = load_data() 
+    if clf_name == "Случайный лес":
+        clf = RandomForest(data, params['n_start'], params['n_stop'], params['n_num'])
+    return clf
+
+
+#посмотреть какие параметры можно изменять и настраивать в моделях
+def add_parameter_ui(clf_name):
+    params = dict()
+    if clf_name == "Случайный лес":
+        n_start = st.sidebar.slider('n_start', 10, 200)
+        params['n_start'] = n_start
+        n_stop = st.sidebar.slider('n_stop', 300, 500)
+        params['n_stop'] = n_stop
+        n_num = st.sidebar.slider('n_num', 50, 1000)
+        params['n_num'] = n_num
+    if clf_name == "LightGBM":
+        
+    elif clf_name == "Stochastic Gradient Decent":
+    
+    elif clf_name == "Decision Tree":
+    
+    elif clf_name == "Naive Bayes":
+    
+    elif clf_name == "Support Vector Machines":
+    
+    elif clf_name == "KNN":
+    
+    elif clf_name == "Logistic Regression":
+    
+    elif clf_name == "Random Forest":
+        
+    elif clf_name == "Linear Regression":
+    
+    elif clf_name == "XGBoost":
+        
+    return params
+
+    
+
+
+def get_user_input():
+     n_start = st.sidebar.slider(n_start, 10, 200)
+
+    
+
+def ann():     
+    return 0.9601    
+    
+def regress():                     
+    st.image('DataAnal/диплом/pic/Логистическая регрессия.PNG')
+    return 0.9395
+
+
+def boost():                     
+    st.image('DataAnal/диплом/pic/XGBoost.PNG')
+    return 0.9717
+
+def forest():
+    st.image('DataAnal/диплом/pic/Случайный лес.PNG')
+    return 0.9307
+
+@st.cache
+def load_data():
+    data = pd.read_csv('DataAnal/диплом/Financial Distress.csv')
+    return data
+
+def visualize_data(df, x_axis, y_axis):
+    graph = alt.Chart(df).mark_circle(size=60).encode(
+        x=x_axis,
+        y=y_axis,
+        color='Origin',
+        tooltip=['Name', 'Origin', 'Horsepower', 'Miles_per_Gallon']
+    ).interactive()
+    st.write(graph)
+
+@st.cache
+def RandomForest(data, n_start, n_stop, n_num):
+    distressed = [1 if row['Financial Distress'] <= -0.5 else 0 for _, row in data.iterrows()]
+    data_full = data
+    data_full['Distressed'] = pd.Series(distressed)
+    data_full.loc[data_full['Distressed'] == 1, ['Financial Distress', 'Distressed']].head(10)
+
+    SSS = StratifiedShuffleSplit(random_state=10, test_size=.3, n_splits=1)
+    X = data_full.iloc[:, 3:-1].drop('x80', axis=1)
+    y = data_full['Distressed'] 
+    for train_index, test_index in SSS.split(X, y):
+        print("CV:", train_index, "HO:", test_index)
+        X_cv, X_ho = X.iloc[train_index], X.iloc[test_index]
+        y_cv, y_ho = y[train_index], y[test_index]
+        
+    
+   # n_estimators = [int(x) for x in np.linspace(start = 100, stop = 1000, num = 50)]
+    n_estimators = [int(x) for x in np.linspace(n_start, n_stop, n_num)]
+    max_features = ['auto', 'sqrt']
+    max_depth = [int(x) for x in np.linspace(5, 55, num = 10)]
+    max_depth.append(None)
+    min_samples_split = [2, 5, 10]
+    min_samples_leaf = [1, 2, 3, 4]
+    bootstrap = [True, False]
+    class_weight = ['balanced', None]
+
+    random_grid = {'n_estimators': n_estimators,
+               'max_features': max_features,
+               'max_depth': max_depth,
+               'min_samples_split': min_samples_split,
+               'min_samples_leaf': min_samples_leaf,
+               'bootstrap': bootstrap,
+               'class_weight': class_weight}
+
+    rf_clsf = RandomForestClassifier(random_state=10, class_weight='balanced')
+    rf_random = RandomizedSearchCV(estimator = rf_clsf, param_distributions = random_grid, n_iter = 10, cv = 3, verbose=2, random_state=10, n_jobs = -1, refit='f1', scoring=['f1', 'precision', 'recall'])
+    rf_random.fit(X_cv, y_cv)
+    
+    predict = rf_random.predict(X_ho)
+    probs = rf_random.predict_proba(X_ho)[:,1]
+    
+    from sklearn.metrics import roc_auc_score
+
+    # Рассчитываем roc auc
+    roc_value = roc_auc_score(y_ho, probs)
+    
+    from sklearn import metrics
+    fpr, tpr, _ = metrics.roc_curve(y_ho, probs)
+    figure = plt.plot(fpr,tpr,label="data 1, auc="+str(roc_value))
+    plt.legend(loc=4)
+    st.write(roc_value)
+    best_rf_clsf = rf_random.best_estimator_
+    best_rf_clsf.fit(X_cv, y_cv)    
+    
+    return best_rf_clsf;
+
+@st.cache
+def XGBoosting(data):
+    import xgboost as xgb
+    xgb_learning_rate = [x for x in np.linspace(start = 0.001, stop = 0.1, num = 10)]
+    xgb_n_estimators = [int(x) for x in np.linspace(start = 100, stop = 1000, num = 10)]
+    xgb_booster = ['gbtree', 'dart']
+    xgb_colsample_bytree = [0.4, 0.6, 0.8, 1.0]
+    xgb_colsample_bylevel = [0.5, 0.75, 1.0]
+    xgb_scale_pos_weight = [(len(y_cv) - sum(y_cv))/sum(y_cv)]
+    xgb_min_child_weight = [1]
+    xgb_subsample = [0.5, 1.0]
+
+
+    random_grid = {'learning_rate': xgb_learning_rate,
+               'n_estimators': xgb_n_estimators,
+               'booster': xgb_booster,
+               'colsample_bytree': xgb_colsample_bytree,
+               'colsample_bylevel': xgb_colsample_bylevel,
+               'scale_pos_weight': xgb_scale_pos_weight,
+               'min_child_weight': xgb_min_child_weight,
+               'subsample': xgb_subsample}
+    xgb_clsf = xgb.XGBClassifier(random_state=10)
+    xgb_random = RandomizedSearchCV(estimator = xgb_clsf, param_distributions = random_grid, n_iter = 10, cv = 3, verbose=2, random_state=10, n_jobs = -1, refit='f1', scoring=['f1', 'precision', 'recall'])
+    xgb_random.fit(X_cv, y_cv)
+    
+    best_xgb_clsf = xgb_random.best_estimator_
+    best_xgb_clsf.fit(X_cv, y_cv)
+    
+    return best_xgb_clsf
+
+def AboutData(data):
+    st.title("Данные для прогнозирования")
+    st.write(data.head())
+    st.write("Данные взяты с сайта kaggle")
+    st.write('Данные взяты https://www.kaggle.com/shebrahimi/financial-distress')
+    st.write("Этот набор данных предназначен для прогнозирования финансовых бедствий для выборки компаний.")
+    st.write(data.describe())
+    if st.checkbox("О файле Financial Distress.csv"):
+        st.write("Первый столбец: Компания представляет собой образцы компаний.")
+        st.write("Второй столбец: Время показывает разные периоды времени, которым принадлежат данные. Длина временного ряда варьируется от 1 до 14 для каждой компании.")
+        st.write("Третий столбец: целевая переменная обозначается как «Финансовый кризис», если она будет больше -0,50, компанию следует считать здоровой (0). В противном случае он был бы расценен как финансово неблагополучный (1).")
+        st.write("От четвертого до последнего столбца: характеристики, обозначенные от x1 до x83, представляют собой некоторые финансовые и нефинансовые характеристики отобранных компаний. Эти характеристики относятся к предыдущему периоду времени, который следует использовать для прогнозирования того, будет ли компания испытывать финансовые затруднения или нет (классификация). Признак x80 - категориальная переменная")
+
+
 def aboutModels():
     st.header("Где можно использовать линейную регрессию?")
     st.write("Это очень мощный метод, и его можно использовать для понимания факторов, влияющих на прибыльность. Его можно использовать для прогнозирования продаж в ближайшие месяцы путем анализа данных о продажах за предыдущие месяцы. Он также может быть использован для получения различной информации о поведении клиентов. К концу блога мы создадим модель, которая выглядит как на картинке ниже, т.е. определим линию, которая наилучшим образом соответствует данным.")
@@ -94,9 +297,8 @@ def aboutModels():
     st.header("Нейронные сети")    
     st.write("ИНС представляет собой систему соединённых и взаимодействующих между собой простых процессоров (искусственных нейронов). Такие процессоры обычно довольно просты (особенно в сравнении с процессорами, используемыми в персональных компьютерах). Каждый процессор подобной сети имеет дело только с сигналами, которые он периодически получает, и сигналами, которые он периодически посылает другим процессорам. И, тем не менее, будучи соединёнными в достаточно большую сеть с управляемым взаимодействием, такие по отдельности простые процессоры вместе способны выполнять довольно сложные задачи.")
     st.image('DataAnal/диплом/pic/ann1.gif')
-    
 
-
+        
 def info():
     st.header("Статьи и материалы, используемые в работе:")
     st.write("Использование Streamlit")
@@ -198,149 +400,8 @@ def Visualize(data):
     plotCorrelationMatrix(data, 21)
     st.write("Графики разброса и плотности:")
     plotScatterMatrix(data, 20, 10)
-   # st.write("Распределение по времени")    
-   # sns.distplot(data['Time'])
-   # st.pyplot(sns.show())
     
-    
-
-def ann():     
-    return 0.9601    
-    
-def regress():                     
-    st.image('DataAnal/диплом/pic/Логистическая регрессия.PNG')
-    return 0.9395
-
-
-def boost():                     
-    st.image('DataAnal/диплом/pic/XGBoost.PNG')
-    return 0.9717
-
-def forest():
-    st.image('DataAnal/диплом/pic/Случайный лес.PNG')
-    return 0.9307
-
-@st.cache
-def load_data():
-    data = pd.read_csv('DataAnal/диплом/Financial Distress.csv')
-    return data
-
-def visualize_data(df, x_axis, y_axis):
-    graph = alt.Chart(df).mark_circle(size=60).encode(
-        x=x_axis,
-        y=y_axis,
-        color='Origin',
-        tooltip=['Name', 'Origin', 'Horsepower', 'Miles_per_Gallon']
-    ).interactive()
-
-    st.write(graph)
-
-@st.cache
-def RandomForest(data):
-    distressed = [1 if row['Financial Distress'] <= -0.5 else 0 for _, row in data.iterrows()]
-    data_full = data
-    data_full['Distressed'] = pd.Series(distressed)
-    data_full.loc[data_full['Distressed'] == 1, ['Financial Distress', 'Distressed']].head(10)
-
-    SSS = StratifiedShuffleSplit(random_state=10, test_size=.3, n_splits=1)
-    X = data_full.iloc[:, 3:-1].drop('x80', axis=1)
-    y = data_full['Distressed'] 
-    for train_index, test_index in SSS.split(X, y):
-        print("CV:", train_index, "HO:", test_index)
-        X_cv, X_ho = X.iloc[train_index], X.iloc[test_index]
-        y_cv, y_ho = y[train_index], y[test_index]
-        
-    n_estimators = [int(x) for x in np.linspace(start = 100, stop = 1000, num = 50)]
-    max_features = ['auto', 'sqrt']
-    max_depth = [int(x) for x in np.linspace(5, 55, num = 10)]
-    max_depth.append(None)
-    min_samples_split = [2, 5, 10]
-    min_samples_leaf = [1, 2, 3, 4]
-    bootstrap = [True, False]
-    class_weight = ['balanced', None]
-
-    random_grid = {'n_estimators': n_estimators,
-               'max_features': max_features,
-               'max_depth': max_depth,
-               'min_samples_split': min_samples_split,
-               'min_samples_leaf': min_samples_leaf,
-               'bootstrap': bootstrap,
-               'class_weight': class_weight}
-
-    rf_clsf = RandomForestClassifier(random_state=10, class_weight='balanced')
-    rf_random = RandomizedSearchCV(estimator = rf_clsf, param_distributions = random_grid, n_iter = 10, cv = 3, verbose=2, random_state=10, n_jobs = -1, refit='f1', scoring=['f1', 'precision', 'recall'])
-    rf_random.fit(X_cv, y_cv)
-    
-    predict = rf_random.predict(X_ho)
-    probs = rf_random.predict_proba(X_ho)[:,1]
-    
-    from sklearn.metrics import roc_auc_score
-
-    # Рассчитываем roc auc
-    roc_value = roc_auc_score(y_ho, probs)
-    
-    from sklearn import metrics
-    fpr, tpr, _ = metrics.roc_curve(y_ho, probs)
-    figure = plt.plot(fpr,tpr,label="data 1, auc="+str(roc_value))
-    plt.legend(loc=4)
-    st.write(roc_value)
-    #вывести график
-    st.pyplot(figure)
-
-    best_rf_clsf = rf_random.best_estimator_
-    best_rf_clsf.fit(X_cv, y_cv)    
-    
-    return best_rf_clsf;
-
-@st.cache
-def XGBoosting(data):
-    import xgboost as xgb
-    xgb_learning_rate = [x for x in np.linspace(start = 0.001, stop = 0.1, num = 10)]
-    xgb_n_estimators = [int(x) for x in np.linspace(start = 100, stop = 1000, num = 10)]
-    xgb_booster = ['gbtree', 'dart']
-    xgb_colsample_bytree = [0.4, 0.6, 0.8, 1.0]
-    xgb_colsample_bylevel = [0.5, 0.75, 1.0]
-    xgb_scale_pos_weight = [(len(y_cv) - sum(y_cv))/sum(y_cv)]
-    xgb_min_child_weight = [1]
-    xgb_subsample = [0.5, 1.0]
-
-
-    random_grid = {'learning_rate': xgb_learning_rate,
-               'n_estimators': xgb_n_estimators,
-               'booster': xgb_booster,
-               'colsample_bytree': xgb_colsample_bytree,
-               'colsample_bylevel': xgb_colsample_bylevel,
-               'scale_pos_weight': xgb_scale_pos_weight,
-               'min_child_weight': xgb_min_child_weight,
-               'subsample': xgb_subsample}
-    xgb_clsf = xgb.XGBClassifier(random_state=10)
-    xgb_random = RandomizedSearchCV(estimator = xgb_clsf, param_distributions = random_grid, n_iter = 10, cv = 3, verbose=2, random_state=10, n_jobs = -1, refit='f1', scoring=['f1', 'precision', 'recall'])
-    xgb_random.fit(X_cv, y_cv)
-    
-    best_xgb_clsf = xgb_random.best_estimator_
-    best_xgb_clsf.fit(X_cv, y_cv)
-    
-    return best_xgb_clsf
-
 if __name__ == "__main__":
     main()
 
-
-
-#основная панель
-
-#data = pd.read_csv('DataAnal/диплом/Financial Distress.csv')
-#st.write(data.head())
-
-#methods = ["RandomForest", "XGBoosting", "Logistic Regression"]
-#choosenMethod = st.selectbox("Выберете модель прогнозирования: ", methods)
-
-#if choosenMethod == 'RandomForest': 
-  #  st.write('Выбран случайный лес')
-    #tree = RandomForest()
-    #st.write(tree)
-#if choosenMethod == 'RXGBoosting':
-  #  st.write('Выбран градиентный бустинг')
-  #  xgboost = XGBoosting()
-  #  st.write(xgboost)
 
