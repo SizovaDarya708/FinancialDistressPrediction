@@ -40,7 +40,8 @@ def main():
         st.title("Data Exploration")
         st.write(data.head())
         st.write("""# Прогноз финансовых бедствий различных компаний""")
-        method = st.selectbox("Выбор метода прогнозирования", ["Случайный лес", 
+        method = st.selectbox("Выбор метода прогнозирования", ["Выбор модели",
+                                                               "Случайный лес", 
                                                                "LightGBM",
                                                                "Stochastic Gradient Decent",
                                                                "Decision Tree",
@@ -55,10 +56,14 @@ def main():
                                                                "Логистическая регрессия",
                                                                "ANN", 
                                                                "Вывод"])
+        if method == "Выбор модели":
+            st.write("Выбор метода")
         if method == "LightGBM":
-            ml.LGBM()
+            params = add_parameter_ui(method)
+            get_classifier(method, params)
         elif method == "Stochastic Gradient Decent":
-            ml.SGD()
+            params = add_parameter_ui(method)
+            get_classifier(method, params)
         elif method == "Decision Tree":
             ml.DT()
         elif method == "Naive Bayes":
@@ -106,6 +111,25 @@ def get_classifier(clf_name, params):
     data = load_data() 
     if clf_name == "Случайный лес":
         clf = RandomForest(data, params['n_start'], params['n_stop'], params['n_num'])
+    elif clf_name == "LightGBM":
+        clf = ml.LGBM( params['num_leaves'], params['n_estimators'],  params['min_child_samples'])
+    elif clf_name == "Stochastic Gradient Decent":
+        clf = ml.SGD(params['al'], params['epsilon'], params['eta'], params['n_iter'])
+   # elif clf_name == "Decision Tree":
+    
+   # elif clf_name == "Naive Bayes":
+    
+   # elif clf_name == "Support Vector Machines":
+    
+   # elif clf_name == "KNN":
+    
+    #elif clf_name == "Logistic Regression":
+    
+   # elif clf_name == "Random Forest":
+        
+   # elif clf_name == "Linear Regression":
+    
+    #elif clf_name == "XGBoost":
     return clf
 
 
@@ -119,25 +143,44 @@ def add_parameter_ui(clf_name):
         params['n_stop'] = n_stop
         n_num = st.sidebar.slider('n_num', 50, 1000)
         params['n_num'] = n_num
-    if clf_name == "LightGBM":
-        
+    elif clf_name == "LightGBM":
+        st.sidebar.markdown("num_leaves: int, default=31. Максимальное количество листьев на дереве для базового обучения.")
+        num_leaves = st.sidebar.slider('num_leaves', 30, 100)
+        params['num_leaves'] = num_leaves
+        st.sidebar.markdown("n_estimators: int, default=100. Количество boosted trees для обучения.")
+        n_estimators = st.sidebar.slider('n_estimators', 50, 200)
+        params['n_estimators'] = n_estimators
+        st.sidebar.markdown("min_child_samples: int, default=20. Минимальное количество данных, необходимых для потомка/листа.")
+        min_child_samples = st.sidebar.slider('min_child_samples', 0.0, 1.0)
+        params['min_child_samples'] = min_child_samples
     elif clf_name == "Stochastic Gradient Decent":
+        st.sidebar.markdown("alpha: float, default=0.0001. Константа, умножающая член регуляризации.")
+        al = st.sidebar.slider('alpha', 0.01, 0.1)
+        params['al'] = al
+        st.sidebar.markdown("epsilon: float, default=0.1. Эпсилон для функции потерь.")
+        epsilon = st.sidebar.slider('epsilon', 0.1, 1.0)
+        params['epsilon'] = epsilon
+        st.sidebar.markdown("eta0: double, default=0.0. Начальная скорость обучения.")
+        eta = st.sidebar.slider('eta', 0.0, 1.0)
+        params['eta'] = eta
+        st.sidebar.markdown("n_iter_no_change: int, default=5. Количество итераций без улучшений, чтобы дождаться досрочной остановки.");
+        n_iter = st.sidebar.slider('n_iter', 1, 10)
+        params['n_iter'] = n_iter
+   # elif clf_name == "Decision Tree":
     
-    elif clf_name == "Decision Tree":
+   # elif clf_name == "Naive Bayes":
     
-    elif clf_name == "Naive Bayes":
+   # elif clf_name == "Support Vector Machines":
     
-    elif clf_name == "Support Vector Machines":
+   # elif clf_name == "KNN":
     
-    elif clf_name == "KNN":
+   # elif clf_name == "Logistic Regression":
     
-    elif clf_name == "Logistic Regression":
-    
-    elif clf_name == "Random Forest":
+   # elif clf_name == "Random Forest":
         
-    elif clf_name == "Linear Regression":
+   # elif clf_name == "Linear Regression":
     
-    elif clf_name == "XGBoost":
+   # elif clf_name == "XGBoost":
         
     return params
 

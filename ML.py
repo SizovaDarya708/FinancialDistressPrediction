@@ -200,12 +200,12 @@ def SVC():
     acc_svm_model=roc_auc_score(y_test, y_pred5)*100
     acc_svm_model
     
-def SGD():
-    sgd_model=SGDClassifier()
+def SGD(al, e, eta, n):
+    sgd_model=SGDClassifier(alpha=al, epsilon=e, eta0=eta, n_iter_no_change=n)
     sgd_model.fit(X_train,y_train)
     sgd_pred=sgd_model.predict(X_test)
     acc_sgd=round(sgd_model.score(X_train,y_train)*100,10)
-    acc_sgd
+    st.text(acc_sgd)
     
 def XGB():
     xgb_model=XGBClassifier()
@@ -214,8 +214,8 @@ def XGB():
     acc_xgb=round(xgb_model.score(X_train,y_train)*100,10)
     acc_xgb
     
-def LGBM():
-    lgbm = LGBMClassifier()
+def LGBM(num_l, n_est, min_child):
+    lgbm = LGBMClassifier( num_leaves=num_l, n_estimators=n_est, min_child_samples=min_child)
     lgbm.fit(X_train,y_train)
     lgbm_pred=lgbm.predict(X_test)
     acc_lgbm=round(lgbm.score(X_train,y_train)*100,10)
