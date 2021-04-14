@@ -161,72 +161,82 @@ from xgboost import XGBClassifier
 from sklearn.cluster import KMeans
 from lightgbm import LGBMClassifier
 
-def KNN():
+def KNN(neig, leaf_s, P):
     st.title("Модель прогнозирования - KNN")
-    knn = KNeighborsClassifier(n_neighbors=15)
+    knn = KNeighborsClassifier(n_neighbors=neig, leaf_size=leaf_s, p=P)
     clf = knn.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
-    acc_knb_model=roc_auc_score(y_test, y_pred)*100
-    acc_knb_model
+    acc_knb_model=roc_auc_score(y_test, y_pred)
+    st.text(acc_knb_model)
     
-def LR():
-    lr = LogisticRegression(C = 0.2)
+def LOR(c, maxiter):
+    st.title("Модель прогнозирования - Logistic Regression")
+    lr = LogisticRegression(C=c, max_iter = maxiter)
     clf1 = lr.fit(X_train, y_train)
     y_pred1 = clf1.predict(X_test)
-    acc_log_reg=roc_auc_score(y_test, y_pred1)*100
-    acc_log_reg
+    acc_log_reg=roc_auc_score(y_test, y_pred1)
+    st.text(acc_log_reg)
     
 def GNB():
+    st.title("Модель прогнозирования - Naive Bayes")
     clf2 = GaussianNB().fit(X_train, y_train)
     y_pred2 = clf2.predict(X_test)
-    acc_nb=roc_auc_score(y_test, y_pred2)*100
-    acc_nb
+    acc_nb=roc_auc_score(y_test, y_pred2)
+    st.text(acc_nb)
     
-def DT():
-    clf3 = tree.DecisionTreeClassifier().fit(X_train, y_train)
+def DT(m_s, m_l, c_a):
+    st.title("Модель прогнозирования - Decision Tree")
+    clf3 = tree.DecisionTreeClassifier(min_samples_split = m_s, min_samples_leaf=m_l, ccp_alpha = c_a).fit(X_train, y_train)
     y_pred3 = clf3.predict(X_test)
-    acc_dt=roc_auc_score(y_test, y_pred3)*100
-    acc_dt
+    acc_dt=roc_auc_score(y_test, y_pred3)
+    st.text(acc_dt)
     
-def RF():
-    clf3 = tree.DecisionTreeClassifier().fit(X_train, y_train)
-    y_pred3 = clf3.predict(X_test)
-    acc_dt=roc_auc_score(y_test, y_pred3)*100
-    acc_dt
+def RF(md, mss, msl):
+    st.title("Модель прогнозирования - Random Forest")
+    clf4 = RandomForestClassifier(max_depth=md, min_samples_split=mss, min_samples_leaf=msl).fit(X_train, y_train)
+    y_pred4 = clf4.predict(X_test)
+    acc_rmf_model=roc_auc_score(y_test, y_pred4)
+    st.text(acc_rmf_model)
     
-def SVC():
-    clf5 = SVC(gamma='auto').fit(X_train, y_train)
+def SVM(c, deg, cache):
+    st.title("Модель прогнозирования - Support Vector Machines")
+    clf5 = SVC(C=c, degree=deg, gamma='auto', cache_size=cache).fit(X_train, y_train)
+    #clf5 = SVC().fit(X_train, y_train)
     y_pred5 = clf5.predict(X_test)
-    acc_svm_model=roc_auc_score(y_test, y_pred5)*100
-    acc_svm_model
+    acc_svm_model=roc_auc_score(y_test, y_pred5)
+    st.text(acc_svm_model)
     
 def SGD(al, e, eta, n):
+    st.title("Модель прогнозирования - Stochastic Gradient Decent")
     sgd_model=SGDClassifier(alpha=al, epsilon=e, eta0=eta, n_iter_no_change=n)
     sgd_model.fit(X_train,y_train)
     sgd_pred=sgd_model.predict(X_test)
-    acc_sgd=round(sgd_model.score(X_train,y_train)*100,10)
+    acc_sgd=round(sgd_model.score(X_train,y_train),10)
     st.text(acc_sgd)
     
 def XGB():
+    st.title("Модель прогнозирования - XGBoost")
     xgb_model=XGBClassifier()
     xgb_model.fit(X_train,y_train)
     xgb_pred=xgb_model.predict(X_test)
-    acc_xgb=round(xgb_model.score(X_train,y_train)*100,10)
-    acc_xgb
+    acc_xgb=round(xgb_model.score(X_train,y_train),10)
+    st.text(acc_xgb)
     
 def LGBM(num_l, n_est, min_child):
+    st.title("Модель прогнозирования - LightGBM")
     lgbm = LGBMClassifier( num_leaves=num_l, n_estimators=n_est, min_child_samples=min_child)
     lgbm.fit(X_train,y_train)
     lgbm_pred=lgbm.predict(X_test)
-    acc_lgbm=round(lgbm.score(X_train,y_train)*100,10)
-    acc_lgbm
+    acc_lgbm=round(lgbm.score(X_train,y_train),10)
+    st.text(acc_lgbm)
     
 def LR():
+    st.title("Модель прогнозирования - LinearRegression")
     regr = linear_model.LinearRegression()
     regr.fit(X_train,y_train)
     regr_pred=regr.predict(X_test)
-    acc_regr=round(regr.score(X_train,y_train)*100,10)
-    acc_regr
+    acc_regr=round(regr.score(X_train,y_train),10)
+    st.text(acc_regr)
     
     
 def Results():

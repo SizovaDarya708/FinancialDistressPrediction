@@ -65,37 +65,33 @@ def main():
             params = add_parameter_ui(method)
             get_classifier(method, params)
         elif method == "Decision Tree":
-            ml.DT()
+            params = add_parameter_ui(method)
+            get_classifier(method, params)
         elif method == "Naive Bayes":
-            ml.GNB()
+            params = add_parameter_ui(method)
+            get_classifier(method, params)
         elif method == "Support Vector Machines":
-            ml.SVC()
+            params = add_parameter_ui(method)
+            get_classifier(method, params)
         elif method == "KNN":
-            ml.KNN()
+            params = add_parameter_ui(method)
+            get_classifier(method, params)
         elif method == "Logistic Regression":
-            ml.LR()
+            params = add_parameter_ui(method)
+            get_classifier(method, params)
         elif method == "Random Forest":
-            ml.RF()
+            params = add_parameter_ui(method)
+            get_classifier(method, params)
         elif method == "Linear Regression":
-            ml.LR()
+            params = add_parameter_ui(method)
+            get_classifier(method, params)
         elif method == "XGBoost":
-            ml.XGB()
+            params = add_parameter_ui(method)
+            get_classifier(method, params)
         elif method == "Случайный лес":
             st.title("Модель прогнозирования - случайный лес")
             params = add_parameter_ui(method)
             get_classifier(method, params)
-            
-            #st.write(tree)
-            #r = forest()
-            #st.write(r)
-        elif method == "XGBoosting":
-            st.title("Модель прогнозирования - бустинг") 
-            b = boost()
-            st.write(b)
-        elif method == "Логистическая регрессия":
-            st.title("Модель прогнозирования - Логистическая регрессия")
-            r = regress()
-            st.write(r)
         elif method == "ANN":
             st.title("Модель прогнозирования - ANN") 
             a = ann()                    
@@ -115,21 +111,24 @@ def get_classifier(clf_name, params):
         clf = ml.LGBM( params['num_leaves'], params['n_estimators'],  params['min_child_samples'])
     elif clf_name == "Stochastic Gradient Decent":
         clf = ml.SGD(params['al'], params['epsilon'], params['eta'], params['n_iter'])
-   # elif clf_name == "Decision Tree":
-    
-   # elif clf_name == "Naive Bayes":
-    
-   # elif clf_name == "Support Vector Machines":
-    
-   # elif clf_name == "KNN":
-    
-    #elif clf_name == "Logistic Regression":
-    
-   # elif clf_name == "Random Forest":
-        
-   # elif clf_name == "Linear Regression":
-    
-    #elif clf_name == "XGBoost":
+    elif clf_name == "Decision Tree":
+        clf = ml.DT(params['min_samples_splitint'], params['min_samples_leaf'], params['ccp_alphanon_negative'])    
+    elif clf_name == "Naive Bayes":
+        clf = ml.GNB()
+    elif clf_name == "Support Vector Machines":
+        clf = ml.SVM(params['С'], params['degree'], params['cache'])
+    elif clf_name == "KNN":
+        clf = ml.KNN(params['n_neighbors'], params['leaf_size'], params['p'])
+    elif clf_name == "Logistic Regression":
+        clf = ml.LOR(params['С'], params['max_iter'])
+    elif clf_name == "Random Forest":
+        clf = ml.RF(params['max_depth'], params['min_samples_split'], params['min_samples_leaf'])
+    elif clf_name == "Linear Regression":
+        clf = ml.LR()
+    elif clf_name == "Logistic Regression":
+        clf = ml.LOR(params['С'], params['max_iter'])
+    elif clf_name == "XGBoost":
+        clf = ml.XGB()
     return clf
 
 
@@ -151,7 +150,7 @@ def add_parameter_ui(clf_name):
         n_estimators = st.sidebar.slider('n_estimators', 50, 200)
         params['n_estimators'] = n_estimators
         st.sidebar.markdown("min_child_samples: int, default=20. Минимальное количество данных, необходимых для потомка/листа.")
-        min_child_samples = st.sidebar.slider('min_child_samples', 0.0, 1.0)
+        min_child_samples = st.sidebar.slider('min_child_samples', 1, 10)
         params['min_child_samples'] = min_child_samples
     elif clf_name == "Stochastic Gradient Decent":
         st.sidebar.markdown("alpha: float, default=0.0001. Константа, умножающая член регуляризации.")
@@ -166,22 +165,56 @@ def add_parameter_ui(clf_name):
         st.sidebar.markdown("n_iter_no_change: int, default=5. Количество итераций без улучшений, чтобы дождаться досрочной остановки.");
         n_iter = st.sidebar.slider('n_iter', 1, 10)
         params['n_iter'] = n_iter
-   # elif clf_name == "Decision Tree":
-    
-   # elif clf_name == "Naive Bayes":
-    
-   # elif clf_name == "Support Vector Machines":
-    
-   # elif clf_name == "KNN":
-    
-   # elif clf_name == "Logistic Regression":
-    
-   # elif clf_name == "Random Forest":
-        
-   # elif clf_name == "Linear Regression":
-    
-   # elif clf_name == "XGBoost":
-        
+    elif clf_name == "Decision Tree":
+        st.sidebar.markdown("min_samples_split: int or float, default=2. Минимальное количество выборок, необходимых для разделения внутреннего узла.")
+        min_samples_splitint = st.sidebar.slider('min_samples_split', 2, 10)
+        params['min_samples_splitint'] = min_samples_splitint
+        st.sidebar.markdown("min_samples_leaf: int or float, default=1. Минимальное количество выборок, которое требуется для конечного узла.")
+        min_samples_leaf = st.sidebar.slider('min_samples_leaf', 0.01, 0.5)
+        params['min_samples_leaf'] = min_samples_leaf
+        st.sidebar.markdown("ccp_alphanon-negative: float, default=0.0. Параметр сложности, используемый для обрезки с минимальными затратами и сложностью.")
+        ccp_alphanon_negative = st.sidebar.slider('ccp_alphanon_negative', 0.0, 1.0)
+        params['ccp_alphanon_negative'] = ccp_alphanon_negative    
+    #elif clf_name == "Naive Bayes":    
+    elif clf_name == "Support Vector Machines":
+        st.sidebar.markdown("C: float, default=1.0. Параметр регуляризации.")
+        С = st.sidebar.slider('С', 1.0, 2.0)
+        params['С'] = С
+        st.sidebar.markdown("degree: int, default=3. Степень полиномиальной функции ядра.")
+        degree = st.sidebar.slider('degree', 1, 10)
+        params['degree'] = degree
+        st.sidebar.markdown("cache_size: float, default=200. Размер кеша ядра (в МБ).")
+        cache = st.sidebar.slider('cache', 100, 300)
+        params['cache'] = cache 
+    elif clf_name == "KNN":
+        st.sidebar.markdown("n_neighbors: int, default=5. Количество соседей для использования.")
+        n_neighbors = st.sidebar.slider('n_neighbors', 1, 20)
+        params['n_neighbors'] = n_neighbors
+        st.sidebar.markdown("leaf_size: int, default=30. Размер листьев, влияет на скорость построения запроса, на объем памяти, необходимый для хранения дерева.")
+        leaf_size = st.sidebar.slider('leaf_size', 10, 100)
+        params['leaf_size'] = leaf_size
+        st.sidebar.markdown("p: int, default=2. Степенный параметр для метрики Минковского.")
+        p = st.sidebar.slider('p', 2, 10)
+        params['p'] = p
+    elif clf_name == "Logistic Regression":
+        st.sidebar.markdown("C: float, default=1.0. Параметр регуляризации.")
+        С = st.sidebar.slider('С', 1.0, 2.0)
+        params['С'] = С
+        st.sidebar.markdown("max_iter: int, default=100. Максимальное количество итераций.")
+        max_iter = st.sidebar.slider('max_iter', 50, 200)
+        params['max_iter'] = max_iter       
+    elif clf_name == "Random Forest":
+        st.sidebar.markdown("max_depth: int, default=None. Максимальная глубина дерева.")
+        max_depth = st.sidebar.slider('max_depth', 1, 30)
+        params['max_depth'] = max_depth
+        st.sidebar.markdown("min_samples_split: int or float, default=1. Минимальное количество выборок, необходимое для разделения внутреннего узла.")
+        min_samples_split = st.sidebar.slider('min_samples_split', 0.01, 1.0)
+        params['min_samples_split'] = min_samples_split
+        st.sidebar.markdown("min_samples_leaf: int or float, default=1. Минимальное количество выборок, которое требуется для конечного узла.")
+        min_samples_leaf = st.sidebar.slider('min_samples_leaf', 0.01, 0.5)
+        params['min_samples_leaf'] = min_samples_leaf
+   # elif clf_name == "Linear Regression":   
+   # elif clf_name == "XGBoost":        
     return params
 
     
