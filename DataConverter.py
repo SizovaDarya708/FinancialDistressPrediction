@@ -21,7 +21,7 @@ def DataPrepForRegr():
     Первый шаг:
     \nУстановка библиотек
     \nPython 3 обладает многими полезными аналитическими библиотеками, например, вот несколько полезных пакетов для загрузки: numpy(линейная алгебра), pandas(обработка данных), sklearn(аналитика)""")
-     if st.checkbox("Показать код 1"):
+    if st.checkbox("Показать код 1"):
         st.code( """import numpy as np
 import pandas as pd
 
@@ -38,7 +38,7 @@ from sklearn.metrics import r2_score""")
     \nФайлы входных данных доступны в каталоге "../input/"., но можно также указать конкретный путь к файлу.
     \nЗдесь же происходит предобработка данных: проверка на пропущенные значения, удаления столбцов, не участвующих в обучении, удаление фиктивных переменных с помощью вспомогательной функции.
     """)
-     if st.checkbox("Показать код 2"):
+    if st.checkbox("Показать код 2"):
             st.code("""import os
 print(os.listdir("../input"))
 dataset = pd.read_csv('../input/Financial Distress.csv')")
@@ -59,7 +59,7 @@ data = onehot_encode(data, column='x80', prefix='x80')
     \nРазделение выборки и ее масштабирование 
     \n С помощью библиотеки sklearn.preprocessing и ее функции StandartScaler() происходит стандартизация функций путем удаления среднего и масштабирования до единичной дисперсии. Вызов функции fit_transform позволяет подогнать к данным, а затем преобразовать выборку.
     """)
-     if st.checkbox("Показать код 3"):
+    if st.checkbox("Показать код 3"):
             st.code("""
             y = data['Financial Distress'].copy()
 X = data.drop('Financial Distress', axis=1).copy()
@@ -79,14 +79,14 @@ def DataPrepForANN():
     Первый шаг:
     \nУстановка библиотек
     \nPython 3 обладает многими полезными аналитическими библиотеками, например, вот несколько полезных пакетов для загрузки: numpy(линейная алгебра), pandas(обработка данных)""")
-     if st.checkbox("Показать код 1"):
+    if st.checkbox("Показать код 1"):
         st.code( """import numpy as np # linear algebra
 import pandas as pd """)
     st.write("""    
     Второй шаг:
     \nЗагрузка данных из файла 
     \n Файлы входных данных доступны в каталоге "../input/"., но можно также указать конкретный путь к файлу.""")
-     if st.checkbox("Показать код 2"):
+    if st.checkbox("Показать код 2"):
             st.code("""import os
 print(os.listdir("../input"))
 dataset = pd.read_csv('../input/Financial Distress.csv')")""")
@@ -94,14 +94,14 @@ dataset = pd.read_csv('../input/Financial Distress.csv')")""")
     Третий шаг:
     \nОбработка столбцов
     \n Необходимо разделить набор данных на зависимые и независимые переменные""")
-     if st.checkbox("Показать код 3"):
+    if st.checkbox("Показать код 3"):
             st.code("""X = dataset.iloc[:,:]
 y = pd.DataFrame(X.iloc[:,2])
 X.drop(columns = 'Financial Distress', inplace=True)""")
     st.write("""    
     Четвертый шаг:
     \nКодирование категориальных переменных""")
-     if st.checkbox("Показать код 4"):
+    if st.checkbox("Показать код 4"):
             st.code("""from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 
 labelencoder_X_1 = LabelEncoder()
@@ -133,14 +133,14 @@ X = pd.DataFrame(pd.concat((P,X,F),axis = 1))""")
     st.write("""    
     Пятый шаг:
     \nРазделение набора данных на обучающую и тестовую выборки""")
-     if st.checkbox("Показать код 5"):
+    if st.checkbox("Показать код 5"):
             st.code("""y = (y<-0.5)
 from sklearn.model_selection import train_test_split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3, random_state = 0,stratify = y)""")
     st.write("""    
     Шестой шаг:
     \nМасштабирование функций""")
-     if st.checkbox("Показать код 6"):
+    if st.checkbox("Показать код 6"):
             st.code("""from sklearn.preprocessing import StandardScaler
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
