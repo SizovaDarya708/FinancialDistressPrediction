@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import os
 import seaborn as sns
 import ML as ml
+import DataConverter as dc
 import itertools
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix, roc_auc_score
@@ -23,19 +24,23 @@ from sklearn.model_selection import StratifiedShuffleSplit
 
 def main():
     st.sidebar.header('Прогнозирование банкротства компаний')
-    page = st.sidebar.selectbox("Навигатор", ["Теория", "Практика","О данных"])
+    page = st.sidebar.selectbox("Навигатор", ["Теория", "Практика","О данных", "Предобработка данных"])
     data = load_data()    
     st.set_option('deprecation.showPyplotGlobalUse', False)    
     if page == "Теория":
         st.header("Прогнозирование банкротства компаний")
         st.write("Please select a page on the left.")
-        st.image('DataAnal/диплом/pic/main.PNG')
+       # st.image('DataAnal/диплом/pic/main.PNG')
         st.header("О методах прогнозирования, используемых в программе")
         aboutModels()
         info()
     elif page == "О данных":
         AboutData(data)       
         Visualize(data)
+    elif page == "Предобработка данных":
+        st.title("Предобработка данных")
+        st.write(data.head())
+        dc.PrepFor()
     elif page == "Практика":
         st.title("Data Exploration")
         st.write(data.head())
@@ -58,7 +63,7 @@ def main():
                                                                "Вывод"])
         if method == "Выбор модели":
             st.write("Выбор метода")
-        if method == "LightGBM":
+        elif method == "LightGBM":
             params = add_parameter_ui(method)
             get_classifier(method, params)
         elif method == "Stochastic Gradient Decent":
@@ -241,7 +246,7 @@ def forest():
     st.image('DataAnal/диплом/pic/Случайный лес.PNG')
     return 0.9307
 
-@st.cache
+@st.cache(allow_output_mutation=True)
 def load_data():
     data = pd.read_csv('DataAnal/диплом/Financial Distress.csv')
     return data
@@ -255,7 +260,7 @@ def visualize_data(df, x_axis, y_axis):
     ).interactive()
     st.write(graph)
 
-@st.cache
+@st.cache(allow_output_mutation=True)
 def RandomForest(data, n_start, n_stop, n_num):
     distressed = [1 if row['Financial Distress'] <= -0.5 else 0 for _, row in data.iterrows()]
     data_full = data
@@ -311,7 +316,7 @@ def RandomForest(data, n_start, n_stop, n_num):
     
     return best_rf_clsf;
 
-@st.cache
+@st.cache(allow_output_mutation=True)
 def XGBoosting(data):
     import xgboost as xgb
     xgb_learning_rate = [x for x in np.linspace(start = 0.001, stop = 0.1, num = 10)]

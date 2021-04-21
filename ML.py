@@ -163,6 +163,13 @@ from lightgbm import LGBMClassifier
 
 def KNN(neig, leaf_s, P):
     st.title("Модель прогнозирования - KNN")
+    if st.checkbox("Показать код"):
+        st.write("""knn = KNeighborsClassifier(n_neighbors=neig, leaf_size=leaf_s, p=P)
+    clf = knn.fit(X_train, y_train)
+    y_pred = clf.predict(X_test)
+    acc_knb_model=roc_auc_score(y_test, y_pred)
+    st.text(acc_knb_model)""")
+        
     knn = KNeighborsClassifier(n_neighbors=neig, leaf_size=leaf_s, p=P)
     clf = knn.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
@@ -171,6 +178,13 @@ def KNN(neig, leaf_s, P):
     
 def LOR(c, maxiter):
     st.title("Модель прогнозирования - Logistic Regression")
+    if st.checkbox("Показать код"):
+        st.write("""lr = LogisticRegression(C=c, max_iter = maxiter)
+    clf1 = lr.fit(X_train, y_train)
+    y_pred1 = clf1.predict(X_test)
+    acc_log_reg=roc_auc_score(y_test, y_pred1)
+    st.text(acc_log_reg)""")
+        
     lr = LogisticRegression(C=c, max_iter = maxiter)
     clf1 = lr.fit(X_train, y_train)
     y_pred1 = clf1.predict(X_test)
@@ -179,6 +193,11 @@ def LOR(c, maxiter):
     
 def GNB():
     st.title("Модель прогнозирования - Naive Bayes")
+    if st.checkbox("Показать код"):
+        st.code("""clf2 = GaussianNB().fit(X_train, y_train)
+    y_pred2 = clf2.predict(X_test)
+    acc_nb=roc_auc_score(y_test, y_pred2)
+    st.text(acc_nb)""")
     clf2 = GaussianNB().fit(X_train, y_train)
     y_pred2 = clf2.predict(X_test)
     acc_nb=roc_auc_score(y_test, y_pred2)
@@ -186,6 +205,12 @@ def GNB():
     
 def DT(m_s, m_l, c_a):
     st.title("Модель прогнозирования - Decision Tree")
+    if st.checkbox("Показать код"):
+        st.code("""clf3 = tree.DecisionTreeClassifier(min_samples_split = m_s, min_samples_leaf=m_l, ccp_alpha = c_a).fit(X_train, y_train)
+    y_pred3 = clf3.predict(X_test)
+    acc_dt=roc_auc_score(y_test, y_pred3)
+    st.text(acc_dt)""")
+        
     clf3 = tree.DecisionTreeClassifier(min_samples_split = m_s, min_samples_leaf=m_l, ccp_alpha = c_a).fit(X_train, y_train)
     y_pred3 = clf3.predict(X_test)
     acc_dt=roc_auc_score(y_test, y_pred3)
@@ -193,6 +218,12 @@ def DT(m_s, m_l, c_a):
     
 def RF(md, mss, msl):
     st.title("Модель прогнозирования - Random Forest")
+    if st.checkbox("Показать код"):
+        st.code(""" clf4 = RandomForestClassifier(max_depth=md, min_samples_split=mss, min_samples_leaf=msl).fit(X_train, y_train)
+    y_pred4 = clf4.predict(X_test)
+    acc_rmf_model=roc_auc_score(y_test, y_pred4)
+    st.text(acc_rmf_model)""")
+        
     clf4 = RandomForestClassifier(max_depth=md, min_samples_split=mss, min_samples_leaf=msl).fit(X_train, y_train)
     y_pred4 = clf4.predict(X_test)
     acc_rmf_model=roc_auc_score(y_test, y_pred4)
@@ -200,14 +231,26 @@ def RF(md, mss, msl):
     
 def SVM(c, deg, cache):
     st.title("Модель прогнозирования - Support Vector Machines")
+    if st.checkbox("Показать код"):
+        st.code("""clf5 = SVC(C=c, degree=deg, gamma='auto', cache_size=cache).fit(X_train, y_train)
+    y_pred5 = clf5.predict(X_test)
+    acc_svm_model=roc_auc_score(y_test, y_pred5)
+    st.text(acc_svm_model)""")
+        
     clf5 = SVC(C=c, degree=deg, gamma='auto', cache_size=cache).fit(X_train, y_train)
-    #clf5 = SVC().fit(X_train, y_train)
     y_pred5 = clf5.predict(X_test)
     acc_svm_model=roc_auc_score(y_test, y_pred5)
     st.text(acc_svm_model)
     
 def SGD(al, e, eta, n):
     st.title("Модель прогнозирования - Stochastic Gradient Decent")
+    if st.checkbox("Показать код"):
+        st.code("""sgd_model=SGDClassifier(alpha=al, epsilon=e, eta0=eta, n_iter_no_change=n)
+    sgd_model.fit(X_train,y_train)
+    sgd_pred=sgd_model.predict(X_test)
+    acc_sgd=round(sgd_model.score(X_train,y_train),10)
+    st.text(acc_sgd)""")
+        
     sgd_model=SGDClassifier(alpha=al, epsilon=e, eta0=eta, n_iter_no_change=n)
     sgd_model.fit(X_train,y_train)
     sgd_pred=sgd_model.predict(X_test)
@@ -216,6 +259,13 @@ def SGD(al, e, eta, n):
     
 def XGB():
     st.title("Модель прогнозирования - XGBoost")
+    if st.checkbox("Показать код"):
+        st.code("""xgb_model=XGBClassifier()
+    xgb_model.fit(X_train,y_train)
+    xgb_pred=xgb_model.predict(X_test)
+    acc_xgb=round(xgb_model.score(X_train,y_train),10)
+    st.text(acc_xgb)""")
+        
     xgb_model=XGBClassifier()
     xgb_model.fit(X_train,y_train)
     xgb_pred=xgb_model.predict(X_test)
@@ -224,6 +274,13 @@ def XGB():
     
 def LGBM(num_l, n_est, min_child):
     st.title("Модель прогнозирования - LightGBM")
+    if st.checkbox("Показать код"):
+        st.code("""lgbm = LGBMClassifier( num_leaves=num_l, n_estimators=n_est, min_child_samples=min_child)
+    lgbm.fit(X_train,y_train)
+    lgbm_pred=lgbm.predict(X_test)
+    acc_lgbm=round(lgbm.score(X_train,y_train),10)
+    st.text(acc_lgbm)""")
+        
     lgbm = LGBMClassifier( num_leaves=num_l, n_estimators=n_est, min_child_samples=min_child)
     lgbm.fit(X_train,y_train)
     lgbm_pred=lgbm.predict(X_test)
@@ -232,6 +289,13 @@ def LGBM(num_l, n_est, min_child):
     
 def LR():
     st.title("Модель прогнозирования - LinearRegression")
+    if st.checkbox("Показать код"):
+        st.code("""regr = linear_model.LinearRegression()
+    regr.fit(X_train,y_train)
+    regr_pred=regr.predict(X_test)
+    acc_regr=round(regr.score(X_train,y_train),10)
+    st.text(acc_regr)""")
+        
     regr = linear_model.LinearRegression()
     regr.fit(X_train,y_train)
     regr_pred=regr.predict(X_test)
