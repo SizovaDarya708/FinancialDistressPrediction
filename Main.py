@@ -10,14 +10,14 @@ import os
 import seaborn as sns
 import ML as ml
 import DataConverter as dc
+import RegressionFunc as rf
+import ANN as ann
 import itertools
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix, roc_auc_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import precision_score
 from sklearn.metrics import f1_score
-from sklearn.model_selection import RandomizedSearchCV
-from sklearn.model_selection import GridSearchCV
 from pprint import pprint
 from sklearn.model_selection import StratifiedShuffleSplit
 
@@ -46,7 +46,6 @@ def main():
         st.write(data.head())
         st.write("""# Прогноз финансовых бедствий различных компаний""")
         method = st.selectbox("Выбор метода прогнозирования", ["Выбор модели",
-                                                               "Случайный лес", 
                                                                "LightGBM",
                                                                "Stochastic Gradient Decent",
                                                                "Decision Tree",
@@ -56,10 +55,8 @@ def main():
                                                                "Logistic Regression",
                                                                "Random Forest",
                                                                "Linear Regression",
-                                                               "XGBoost",
-                                                               "XGBoosting", 
-                                                               "Логистическая регрессия",
-                                                               "ANN", 
+                                                               "XGBoost", 
+                                                               "ANN",
                                                                "Вывод"])
         if method == "Выбор модели":
             st.write("Выбор метода")
@@ -93,14 +90,9 @@ def main():
         elif method == "XGBoost":
             params = add_parameter_ui(method)
             get_classifier(method, params)
-        elif method == "Случайный лес":
-            st.title("Модель прогнозирования - случайный лес")
-            params = add_parameter_ui(method)
-            get_classifier(method, params)
         elif method == "ANN":
-            st.title("Модель прогнозирования - ANN") 
-            a = ann()                    
-            st.write(a)       
+            params = add_parameter_ui(method)
+            get_classifier(method, params)                  
         elif method == "Вывод":
             st.title("Сравнение моделей") 
             st.image('DataAnal/диплом/pic/Итог.PNG')
@@ -134,6 +126,8 @@ def get_classifier(clf_name, params):
         clf = ml.LOR(params['С'], params['max_iter'])
     elif clf_name == "XGBoost":
         clf = ml.XGB()
+    elif clf_name == "ANN":
+        clf = ann.ANN(params['epo'], params['batch_size'])
     return clf
 
 
@@ -218,33 +212,17 @@ def add_parameter_ui(clf_name):
         st.sidebar.markdown("min_samples_leaf: int or float, default=1. Минимальное количество выборок, которое требуется для конечного узла.")
         min_samples_leaf = st.sidebar.slider('min_samples_leaf', 0.01, 0.5)
         params['min_samples_leaf'] = min_samples_leaf
+    elif clf_name == "ANN":
+        st.sidebar.markdown("epochs: int. Эпоха - это одна итерация в процессе обучения. Так как компьютеру сложно справиться со всем обучением сразу, его делят на эпохи")
+        epo = st.sidebar.slider('epochs', 5, 200)
+        params['epo'] = epo
+        st.sidebar.markdown("batch_size: int. Общее число тренировочных объектов, представленных в одном обучении")
+        batch_size = st.sidebar.slider('batch_size', 100, 1000)
+        params['batch_size'] = batch_size
    # elif clf_name == "Linear Regression":   
    # elif clf_name == "XGBoost":        
     return params
 
-    
-
-
-def get_user_input():
-     n_start = st.sidebar.slider(n_start, 10, 200)
-
-    
-
-def ann():     
-    return 0.9601    
-    
-def regress():                     
-    st.image('DataAnal/диплом/pic/Логистическая регрессия.PNG')
-    return 0.9395
-
-
-def boost():                     
-    st.image('DataAnal/диплом/pic/XGBoost.PNG')
-    return 0.9717
-
-def forest():
-    st.image('DataAnal/диплом/pic/Случайный лес.PNG')
-    return 0.9307
 
 @st.cache(allow_output_mutation=True)
 def load_data():
@@ -260,61 +238,6 @@ def visualize_data(df, x_axis, y_axis):
     ).interactive()
     st.write(graph)
 
-@st.cache(allow_output_mutation=True)
-def RandomForest(data, n_start, n_stop, n_num):
-    distressed = [1 if row['Financial Distress'] <= -0.5 else 0 for _, row in data.iterrows()]
-    data_full = data
-    data_full['Distressed'] = pd.Series(distressed)
-    data_full.loc[data_full['Distressed'] == 1, ['Financial Distress', 'Distressed']].head(10)
-
-    SSS = StratifiedShuffleSplit(random_state=10, test_size=.3, n_splits=1)
-    X = data_full.iloc[:, 3:-1].drop('x80', axis=1)
-    y = data_full['Distressed'] 
-    for train_index, test_index in SSS.split(X, y):
-        print("CV:", train_index, "HO:", test_index)
-        X_cv, X_ho = X.iloc[train_index], X.iloc[test_index]
-        y_cv, y_ho = y[train_index], y[test_index]
-        
-    
-   # n_estimators = [int(x) for x in np.linspace(start = 100, stop = 1000, num = 50)]
-    n_estimators = [int(x) for x in np.linspace(n_start, n_stop, n_num)]
-    max_features = ['auto', 'sqrt']
-    max_depth = [int(x) for x in np.linspace(5, 55, num = 10)]
-    max_depth.append(None)
-    min_samples_split = [2, 5, 10]
-    min_samples_leaf = [1, 2, 3, 4]
-    bootstrap = [True, False]
-    class_weight = ['balanced', None]
-
-    random_grid = {'n_estimators': n_estimators,
-               'max_features': max_features,
-               'max_depth': max_depth,
-               'min_samples_split': min_samples_split,
-               'min_samples_leaf': min_samples_leaf,
-               'bootstrap': bootstrap,
-               'class_weight': class_weight}
-
-    rf_clsf = RandomForestClassifier(random_state=10, class_weight='balanced')
-    rf_random = RandomizedSearchCV(estimator = rf_clsf, param_distributions = random_grid, n_iter = 10, cv = 3, verbose=2, random_state=10, n_jobs = -1, refit='f1', scoring=['f1', 'precision', 'recall'])
-    rf_random.fit(X_cv, y_cv)
-    
-    predict = rf_random.predict(X_ho)
-    probs = rf_random.predict_proba(X_ho)[:,1]
-    
-    from sklearn.metrics import roc_auc_score
-
-    # Рассчитываем roc auc
-    roc_value = roc_auc_score(y_ho, probs)
-    
-    from sklearn import metrics
-    fpr, tpr, _ = metrics.roc_curve(y_ho, probs)
-    figure = plt.plot(fpr,tpr,label="data 1, auc="+str(roc_value))
-    plt.legend(loc=4)
-    st.write(roc_value)
-    best_rf_clsf = rf_random.best_estimator_
-    best_rf_clsf.fit(X_cv, y_cv)    
-    
-    return best_rf_clsf;
 
 @st.cache(allow_output_mutation=True)
 def XGBoosting(data):

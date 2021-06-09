@@ -1,11 +1,14 @@
 import sys
+
 import pandas as pd
 import numpy as np
+
 import streamlit as st
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.metrics import f1_score, recall_score
 from sklearn.metrics import confusion_matrix
+from sklearn.model_selection import train_test_split
 
 from sklearn.model_selection import TimeSeriesSplit
 
@@ -79,7 +82,12 @@ def rolling_operation(time, train_array, datadict, distress_dict, feature_names,
                 new_row.append(distress_at_eop)
                 new_row_np = np.asarray(new_row)
                 train_array.append(new_row_np)
-    
+
+def label_conv(x):
+    if x > -0.5:
+        return 0
+    else:
+        return 1    
 
 def custom_timeseries_cv(datadict, distress_dict, feature_names, total_n, val_time, test_time, 
                          lookback_periods, total_periods=14):
@@ -121,9 +129,8 @@ def custom_timeseries_cv(datadict, distress_dict, feature_names, total_n, val_ti
     
     return train_array_np, val_array_np, test_array_np
 
-# Generate our sets
 train_array_np, val_array_np, test_array_np = custom_timeseries_cv(datadict, distress_dict, feature_names, total_n,
-                                                     val_time=9, test_time=12, lookback_periods=3, total_periods=14)
+                                                         val_time=9, test_time=12, lookback_periods=3, total_periods=14)
 
 X_train = train_array_np[:,0:train_array_np.shape[1]-1]
 y_train = train_array_np[:,-1].astype(int)
@@ -135,6 +142,21 @@ X_test = test_array_np[:,0:test_array_np.shape[1]-1]
 y_test = test_array_np[:,-1].astype(int)
 
 np.set_printoptions(threshold=sys.maxsize)
+
+data1 = pd.read_csv('DataAnal/диплом/Financial Distress.csv')
+from imblearn.over_sampling import SMOTE
+sm = SMOTE (#sampling_strategy = 0.9,
+	    random_state=0,
+	    k_neighbors=4)
+data1 = data1.drop(['x80'], axis=1)
+labels = data1.iloc[:,2].apply(label_conv).values
+df = data1.iloc[:,3:].values
+
+X_train0, X_test0, y_train0, y_test0 = train_test_split(df, labels, test_size=0.25, stratify=labels, random_state=33897)
+
+X_train0, X_val, y_train0, y_val = train_test_split(X_train0, y_train0, test_size=0.10, stratify=y_train0, random_state=33897)
+X_train_res, y_train_res = sm.fit_sample(X_train0, y_train0)
+
 
 from sklearn.metrics import f1_score
 from sklearn.metrics import roc_auc_score
@@ -159,37 +181,54 @@ from sklearn import linear_model
 import xgboost as xgb
 from xgboost import XGBClassifier
 from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
 from lightgbm import LGBMClassifier
+from sklearn import metrics
 
 def KNN(neig, leaf_s, P):
     st.title("Модель прогнозирования - KNN")
     if st.checkbox("Показать код"):
-        st.write("""knn = KNeighborsClassifier(n_neighbors=neig, leaf_size=leaf_s, p=P)
+        st.code("""knn = KNeighborsClassifier(n_neighbors=neig, leaf_size=leaf_s, p=P)
     clf = knn.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
     acc_knb_model=roc_auc_score(y_test, y_pred)
     st.text(acc_knb_model)""")
-        
-    knn = KNeighborsClassifier(n_neighbors=neig, leaf_size=leaf_s, p=P)
-    clf = knn.fit(X_train, y_train)
-    y_pred = clf.predict(X_test)
-    acc_knb_model=roc_auc_score(y_test, y_pred)
-    st.text(acc_knb_model)
+    if st.checkbox("Использовать несбалансированные данные"):
+        knn = KNeighborsClassifier(n_neighbors=neig, leaf_size=leaf_s, p=P)
+        clf = knn.fit(X_train, y_train)
+        y_pred = clf.predict(X_test)
+        acc_knb_model=roc_auc_score(y_test, y_pred)
+        st.text(acc_knb_model)
+    else:
+        knn = KNeighborsClassifier(n_neighbors=neig, leaf_size=leaf_s, p=P)
+        clf = knn.fit(X_train_res, y_train_res)
+        y_pred = clf.predict(X_test0)
+        acc_knb_model=roc_auc_score(y_test0, y_pred)
+        st.text(acc_knb_model)
     
 def LOR(c, maxiter):
     st.title("Модель прогнозирования - Logistic Regression")
     if st.checkbox("Показать код"):
-        st.write("""lr = LogisticRegression(C=c, max_iter = maxiter)
+        st.code("""lr = LogisticRegression(C=c, max_iter = maxiter)
     clf1 = lr.fit(X_train, y_train)
     y_pred1 = clf1.predict(X_test)
     acc_log_reg=roc_auc_score(y_test, y_pred1)
     st.text(acc_log_reg)""")
+    
+    if st.checkbox("Использовать несбалансированные данные"):
         
-    lr = LogisticRegression(C=c, max_iter = maxiter)
-    clf1 = lr.fit(X_train, y_train)
-    y_pred1 = clf1.predict(X_test)
-    acc_log_reg=roc_auc_score(y_test, y_pred1)
-    st.text(acc_log_reg)
+        lr = LogisticRegression(C=c, max_iter = maxiter)
+        clf1 = lr.fit(X_train, y_train)
+        
+        y_pred1 = clf1.predict(X_test)
+        acc_log_reg=roc_auc_score(y_test, y_pred1)
+        st.text(acc_log_reg)
+    else:
+        lr = LogisticRegression(C=c, max_iter = maxiter)
+        clf1 = lr.fit(X_train_res, y_train_res)
+        y_pred1 = clf1.predict(X_test0)
+        acc_log_reg=roc_auc_score(y_test0, y_pred1)
+        st.text(acc_log_reg)
     
 def GNB():
     st.title("Модель прогнозирования - Naive Bayes")
@@ -198,10 +237,19 @@ def GNB():
     y_pred2 = clf2.predict(X_test)
     acc_nb=roc_auc_score(y_test, y_pred2)
     st.text(acc_nb)""")
-    clf2 = GaussianNB().fit(X_train, y_train)
-    y_pred2 = clf2.predict(X_test)
-    acc_nb=roc_auc_score(y_test, y_pred2)
-    st.text(acc_nb)
+    
+    if st.checkbox("Использовать несбалансированные данные"):
+        
+        clf2 = GaussianNB().fit(X_train, y_train)
+        y_pred2 = clf2.predict(X_test)
+        
+        acc_nb=roc_auc_score(y_test, y_pred2)
+        st.text(acc_nb)
+    else:
+        clf2 = GaussianNB().fit(X_train_res, y_train_res)
+        y_pred2 = clf2.predict(X_test0)
+        acc_nb=roc_auc_score(y_test0, y_pred2)
+        st.text(acc_nb)    
     
 def DT(m_s, m_l, c_a):
     st.title("Модель прогнозирования - Decision Tree")
@@ -210,11 +258,20 @@ def DT(m_s, m_l, c_a):
     y_pred3 = clf3.predict(X_test)
     acc_dt=roc_auc_score(y_test, y_pred3)
     st.text(acc_dt)""")
+    
+    if st.checkbox("Использовать несбалансированные данные"):
+        clf3 = tree.DecisionTreeClassifier(min_samples_split = m_s, min_samples_leaf=m_l, ccp_alpha = c_a).fit(X_train, y_train)
+        y_pred3 = clf3.predict(X_test)
+        acc_dt=roc_auc_score(y_test, y_pred3)
+        st.text(acc_dt)
+    else:
+        clf3 = tree.DecisionTreeClassifier(min_samples_split = m_s, 
+                                           min_samples_leaf=m_l,
+                                           ccp_alpha = c_a).fit(X_train_res, y_train_res)
+        y_pred3 = clf3.predict(X_test0)
         
-    clf3 = tree.DecisionTreeClassifier(min_samples_split = m_s, min_samples_leaf=m_l, ccp_alpha = c_a).fit(X_train, y_train)
-    y_pred3 = clf3.predict(X_test)
-    acc_dt=roc_auc_score(y_test, y_pred3)
-    st.text(acc_dt)
+        acc_dt=roc_auc_score(y_test0, y_pred3)
+        st.text(acc_dt)
     
 def RF(md, mss, msl):
     st.title("Модель прогнозирования - Random Forest")
@@ -223,11 +280,34 @@ def RF(md, mss, msl):
     y_pred4 = clf4.predict(X_test)
     acc_rmf_model=roc_auc_score(y_test, y_pred4)
     st.text(acc_rmf_model)""")
-        
-    clf4 = RandomForestClassifier(max_depth=md, min_samples_split=mss, min_samples_leaf=msl).fit(X_train, y_train)
-    y_pred4 = clf4.predict(X_test)
-    acc_rmf_model=roc_auc_score(y_test, y_pred4)
-    st.text(acc_rmf_model)
+    
+    if st.checkbox("Использовать несбалансированные данные"):
+        clf4 = RandomForestClassifier(max_depth=md, min_samples_split=mss, min_samples_leaf=msl).fit(X_train, y_train)
+        y_pred4 = clf4.predict(X_test)
+        acc_rmf_model=roc_auc_score(y_test, y_pred4)
+        st.text(acc_rmf_model)
+        if st.checkbox("Показать ROC-кривую"):
+            fpr, tpr, _ = metrics.roc_curve(y_test, y_pred4)
+            auc = metrics.roc_auc_score(y_test, y_pred4)
+            graph = plt.plot(fpr,tpr,label="data 1, auc="+str(auc))
+            plt.legend(loc=4)
+            plt.savefig('DataAnal/диплом/pic/roc.png')
+            st.image('DataAnal/диплом/pic/roc.png')
+    else:
+        clf4 = RandomForestClassifier(max_depth=md, 
+                                      min_samples_split=mss,
+                                      min_samples_leaf=msl).fit(X_train_res, y_train_res)
+        y_pred4 = clf4.predict(X_test0)
+        acc_rmf_model=roc_auc_score(y_test0, y_pred4)
+        st.text(acc_rmf_model)
+        if st.checkbox("Показать ROC-кривую"):            
+            fpr, tpr, _ = metrics.roc_curve(y_test0, y_pred4)
+            auc = metrics.roc_auc_score(y_test0, y_pred4)
+            graph = plt.plot(fpr,tpr,label="data 1, auc="+str(auc))
+            plt.legend(loc=4)
+            plt.savefig('DataAnal/диплом/pic/roc.png')
+            st.image('DataAnal/диплом/pic/roc.png')
+    
     
 def SVM(c, deg, cache):
     st.title("Модель прогнозирования - Support Vector Machines")
@@ -236,11 +316,25 @@ def SVM(c, deg, cache):
     y_pred5 = clf5.predict(X_test)
     acc_svm_model=roc_auc_score(y_test, y_pred5)
     st.text(acc_svm_model)""")
-        
-    clf5 = SVC(C=c, degree=deg, gamma='auto', cache_size=cache).fit(X_train, y_train)
-    y_pred5 = clf5.predict(X_test)
-    acc_svm_model=roc_auc_score(y_test, y_pred5)
-    st.text(acc_svm_model)
+    
+    if st.checkbox("Использовать несбалансированные данные"):
+        clf5 = SVC(C=c, degree=deg, gamma='auto', cache_size=cache).fit(X_train, y_train)
+        y_pred5 = clf5.predict(X_test)
+        acc_svm_model=roc_auc_score(y_test, y_pred5)
+        st.text(acc_svm_model)
+    else:
+        clf5 = SVC(C=c, degree=deg, gamma='auto', cache_size=cache).fit(X_train_res, y_train_res)
+        y_pred5 = clf5.predict(X_test0)
+        acc_svm_model=roc_auc_score(y_test0, y_pred5)
+        st.text(acc_svm_model)
+    
+    if st.checkbox("Показать ROC-кривую"):
+        fpr, tpr, _ = metrics.roc_curve(y_test0, y_pred5)
+        auc = metrics.roc_auc_score(y_test0, y_pred5)
+        graph = plt.plot(fpr,tpr,label="data 1, auc="+str(auc))
+        plt.legend(loc=4)
+        plt.savefig('DataAnal/диплом/pic/roc.png')
+        st.image('DataAnal/диплом/pic/roc.png')
     
 def SGD(al, e, eta, n):
     st.title("Модель прогнозирования - Stochastic Gradient Decent")
@@ -250,12 +344,24 @@ def SGD(al, e, eta, n):
     sgd_pred=sgd_model.predict(X_test)
     acc_sgd=round(sgd_model.score(X_train,y_train),10)
     st.text(acc_sgd)""")
+    
+    if st.checkbox("Использовать несбалансированные данные"):
         
-    sgd_model=SGDClassifier(alpha=al, epsilon=e, eta0=eta, n_iter_no_change=n)
-    sgd_model.fit(X_train,y_train)
-    sgd_pred=sgd_model.predict(X_test)
-    acc_sgd=round(sgd_model.score(X_train,y_train),10)
-    st.text(acc_sgd)
+        sgd_model=SGDClassifier(alpha=al, 
+                                epsilon=e, 
+                                eta0=eta, 
+                                n_iter_no_change=n)
+        sgd_model.fit(X_train,y_train)
+        
+        sgd_pred=sgd_model.predict(X_test)
+        acc_sgd=round(sgd_model.score(X_train,y_train),10)
+        st.text(acc_sgd)
+    else:
+        sgd_model=SGDClassifier(alpha=al, epsilon=e, eta0=eta, n_iter_no_change=n)
+        sgd_model.fit(X_train_res, y_train_res)
+        sgd_pred=sgd_model.predict(X_test0)
+        acc_sgd=round(sgd_model.score(X_train0, y_train), 10)
+        st.text(acc_sgd)
     
 def XGB():
     st.title("Модель прогнозирования - XGBoost")
@@ -265,12 +371,23 @@ def XGB():
     xgb_pred=xgb_model.predict(X_test)
     acc_xgb=round(xgb_model.score(X_train,y_train),10)
     st.text(acc_xgb)""")
+    
+    if st.checkbox("Использовать несбалансированные данные"):
         
-    xgb_model=XGBClassifier()
-    xgb_model.fit(X_train,y_train)
-    xgb_pred=xgb_model.predict(X_test)
-    acc_xgb=round(xgb_model.score(X_train,y_train),10)
-    st.text(acc_xgb)
+        xgb_model=XGBClassifier(max_depth=5)
+        xgb_model.fit(X_train,y_train)
+        
+        xgb_pred=xgb_model.predict(X_test)
+        acc_xgb=xgb_model.score(X_train, y_train)
+        st.text(acc_xgb)
+        acc_log_reg=roc_auc_score(y_test, xgb_pred)
+        st.text(acc_log_reg)
+    else:
+        xgb_model=XGBClassifier(max_depth=2)
+        xgb_model.fit(X_train_res, y_train_res)
+        xgb_pred=xgb_model.predict(X_test0)
+        acc_xgb= xgb_model.score(X_train0, y_train0)
+        st.text(acc_xgb)
     
 def LGBM(num_l, n_est, min_child):
     st.title("Модель прогнозирования - LightGBM")
@@ -280,12 +397,19 @@ def LGBM(num_l, n_est, min_child):
     lgbm_pred=lgbm.predict(X_test)
     acc_lgbm=round(lgbm.score(X_train,y_train),10)
     st.text(acc_lgbm)""")
-        
-    lgbm = LGBMClassifier( num_leaves=num_l, n_estimators=n_est, min_child_samples=min_child)
-    lgbm.fit(X_train,y_train)
-    lgbm_pred=lgbm.predict(X_test)
-    acc_lgbm=round(lgbm.score(X_train,y_train),10)
-    st.text(acc_lgbm)
+    
+    if st.checkbox("Использовать несбалансированные данные"):
+        lgbm = LGBMClassifier( num_leaves=num_l, n_estimators=n_est, min_child_samples=min_child)
+        lgbm.fit(X_train,y_train)
+        lgbm_pred=lgbm.predict(X_test)
+        acc_lgbm=round(lgbm.score(X_train,y_train),10)
+        st.text(acc_lgbm)
+    else:
+        lgbm = LGBMClassifier( num_leaves=num_l, n_estimators=n_est, min_child_samples=min_child)
+        lgbm.fit(X_train_res, y_train_res)
+        lgbm_pred=lgbm.predict(X_test0)
+        acc_lgbm=round(lgbm.score(X_train0, y_train0),10)
+        st.text(acc_lgbm)
     
 def LR():
     st.title("Модель прогнозирования - LinearRegression")
@@ -294,13 +418,20 @@ def LR():
     regr.fit(X_train,y_train)
     regr_pred=regr.predict(X_test)
     acc_regr=round(regr.score(X_train,y_train),10)
-    st.text(acc_regr)""")
-        
-    regr = linear_model.LinearRegression()
-    regr.fit(X_train,y_train)
-    regr_pred=regr.predict(X_test)
-    acc_regr=round(regr.score(X_train,y_train),10)
-    st.text(acc_regr)
+    st.text(acc_regr)""")  
+    
+    if st.checkbox("Использовать несбалансированные данные"):
+        regr = linear_model.LinearRegression()
+        regr.fit(X_train,y_train)
+        regr_pred=regr.predict(X_test)
+        acc_log_reg=roc_auc_score(y_test, regr_pred)
+        st.text(acc_log_reg)
+    else:
+        regr = linear_model.LinearRegression()
+        regr.fit(X_train_res, y_train_res)
+        regr_pred=regr.predict(X_test0)
+        acc_log_reg=roc_auc_score(y_test0, regr_pred)
+        st.text(acc_log_reg)
     
     
 def Results():
